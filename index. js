@@ -1,1 +1,51 @@
+const {
+  Client,
+  GatewayIntentBits,
+  EmbedBuilder,
+  Events
+} = require("discord.js");
 
+require("dotenv").config();
+
+const client = new Client({
+  intents: [GatewayIntentBits.Guilds]
+});
+
+client.once(Events.ClientReady, () => {
+  console.log(`✅ ${client.user.tag} está en línea.`);
+});
+
+client.on(Events.InteractionCreate, async interaction => {
+  if (!interaction.isChatInputCommand()) return;
+
+  if (interaction.commandName === "embed") {
+    const canal = interaction.options.getChannel("canal");
+    const titulo = interaction.options.getString("titulo");
+    const descripcion = interaction.options.getString("descripcion");
+    const color = interaction.options.getString("color");
+    const footer = interaction.options.getString("footer");
+    const imagen = interaction.options.getAttachment("imagen");
+
+    const embed = new EmbedBuilder()
+      .setTitle(titulo)
+      .setDescription(descripcion)
+      .setColor(color);
+
+    if (footer) {
+      embed.setFooter({ text: footer });
+    }
+
+    if (imagen) {
+      embed.setImage(imagen.url);
+    }
+
+    await canal.send({ embeds: [embed] });
+
+    await interaction.reply({
+      content: "✅ Embed enviado correctamente.",
+      ephemeral: true
+    });
+  }
+});
+
+client.login(process.env.TOKEN);
